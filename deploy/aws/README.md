@@ -83,15 +83,15 @@ FORK_URL=https://github.com/YOU/mailflare.git sudo -E bash bootstrap.sh
 ```
 
 The second run builds the image and starts Mailflare and Caddy. Caddy obtains
-the certificate for `mail.carsens.co` automatically once DNS resolves.
+the certificate for `mail.netfo.co` automatically once DNS resolves.
 
 ## 9. Set up Mailflare
 
-1. Open `https://mail.carsens.co/setup` and create the admin account.
+1. Open `https://mail.netfo.co/setup` and create the admin account.
 2. Admin > Domains: add `carsens.co` and `netfo.co`.
 3. Admin > General: set the storage limit to `1000` (GB).
 
-netfo.co users sign in at `https://mail.carsens.co`.
+carsens.co users sign in at `https://mail.netfo.co`.
 
 ## 10. Test mail flow
 
@@ -99,7 +99,7 @@ Send from a mailbox to an outside address, then from an outside address back in.
 If either fails, check:
 
 - Port 25 is open in the security group (and not blocked by the sender's network).
-- Both domains' MX is `10 mail.carsens.co`, and `mail.carsens.co` points at the Elastic IP.
+- Both domains' MX is `10 mail.netfo.co`, and `mail.netfo.co` points at the Elastic IP.
 - SES is out of the sandbox and both identities are Verified.
 - The logs:
 
