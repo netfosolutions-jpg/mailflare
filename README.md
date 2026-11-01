@@ -1,7 +1,9 @@
-<img src="public/icon-192.png" alt="Mailflare" width="96" />
+<img src="public/icon-192.png" alt="NetfoMailBox" width="96" />
 
 
-# Mailflare
+# NetfoMailBox
+
+NetfoMailBox is Netfo Solutions' build of [Mailflare](https://github.com/hieunc229/mailflare) by hieunc229, used under the AGPL-3.0 (see [LICENSE](LICENSE)); the rest of this README is upstream's documentation, which applies unchanged.
 
 A self-hosted alternative to Google Workspace. Setup **custom domain Emails**, **Calendar, Drive, Booking** and **built-in AI agents**.
 

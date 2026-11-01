@@ -1,10 +1,12 @@
 "use client";
 
 import packageJson from "../../package.json";
+import { useBranding } from "./branding-provider";
 import { useSidebar } from "./sidebar-state";
 import { useShortcuts } from "./shortcuts";
 import { Keyboard } from "@/components/icons";
 import { useLanguage } from "./language-provider";
+import { UPSTREAM_APP_NAME, UPSTREAM_LICENSE, UPSTREAM_REPOSITORY_URL } from "@/lib/branding/defaults";
 
 export function SidebarFooter() {
 	const { t } = useLanguage();
@@ -34,19 +36,22 @@ export function SidebarFooter() {
   );
 }
 
-/** The "Powered by Mailflare vX" credit, shared by the mail and Drive sidebars. */
+/** The app version and the "Powered by Mailflare (AGPL-3.0)" credit, shared by the mail and Drive sidebars. */
 export function PoweredBy({ className = "px-1" }: { className?: string }) {
 	const { t } = useLanguage();
+	const { appName } = useBranding();
 	return (
-      <p className={`${className} text-[11px] text-neutral-500`}>
+      <p className={`${className} text-[11px] leading-4 text-neutral-500`}>
+        {appName} v{packageJson.version}
+        <br />
         {t("navigation.poweredBy")}{" "}
         <a
-          href={`https://mailflare.co/?ref=${typeof window !== "undefined" ? location.hostname : ""}&v=${packageJson.version}`}
+          href={UPSTREAM_REPOSITORY_URL}
           target="_blank"
           className="hover:underline text-neutral-500"
           rel="noreferrer"
         >
-          Mailflare v{packageJson.version}
+          {UPSTREAM_APP_NAME} ({UPSTREAM_LICENSE})
         </a>
       </p>
 	);
