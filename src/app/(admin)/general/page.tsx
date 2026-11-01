@@ -23,7 +23,7 @@ export default function GeneralSettingsPage() {
 	useEffect(() => {
 		let active = true;
 		void loadGeneralSettings().then((settings) => {
-			if (active) { setMaxMb(settings.outboundAttachmentMaxMb); setUnlimited(settings.driveStorageLimitGb === null); if (settings.driveStorageLimitGb !== null) setLimitGb(settings.driveStorageLimitGb); setLoaded(true); }
+			if (active) { setMaxMb(settings.outboundAttachmentMaxMb); setUnlimited(settings.storageLimitGb === null); if (settings.storageLimitGb !== null) setLimitGb(settings.storageLimitGb); setLoaded(true); }
 		}).catch((error) => { if (active) setStatus(error instanceof Error ? error.message : t("general.loadFailed")); });
 		return () => { active = false; };
 	}, [t]);
@@ -46,9 +46,9 @@ export default function GeneralSettingsPage() {
 		setDriveSaving(true);
 		setDriveStatus("");
 		try {
-			const settings = await saveGeneralSettings({ driveStorageLimitGb: unlimited ? null : limitGb });
-			setUnlimited(settings.driveStorageLimitGb === null);
-			if (settings.driveStorageLimitGb !== null) setLimitGb(settings.driveStorageLimitGb);
+			const settings = await saveGeneralSettings({ storageLimitGb: unlimited ? null : limitGb });
+			setUnlimited(settings.storageLimitGb === null);
+			if (settings.storageLimitGb !== null) setLimitGb(settings.storageLimitGb);
 			setDriveStatus(t("general.driveSaved"));
 		} catch (error) {
 			setDriveStatus(error instanceof Error ? error.message : t("general.saveFailed"));

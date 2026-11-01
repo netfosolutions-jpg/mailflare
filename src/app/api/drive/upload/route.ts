@@ -4,7 +4,7 @@ import { driveItems, driveUploadParts } from "@/db/schema";
 import { newId } from "@/lib/ids";
 import { authorizeDrive } from "@/lib/drive/auth";
 import { getDriveItem, getDriveRole, toDriveItemDtos } from "@/lib/drive/access";
-import { getDriveStorageLimit, getDriveStorageUsed } from "@/lib/drive/storage";
+import { assertStorageAvailable, StorageLimitError } from "@/lib/storage/usage";
 import { canEditDrive, DRIVE_MAX_FILE_BYTES, DRIVE_PART_BYTES, DRIVE_UPLOAD_RESUME_MS, driveObjectKey, normalizeDriveName } from "@/lib/drive/utils";
 
 /**
@@ -51,8 +51,12 @@ export async function POST(request: Request) {
 		}
 	}
 
-	const limit = await getDriveStorageLimit(env);
-	if (limit !== null && (await getDriveStorageUsed(db, ownerId)) + size > limit) return NextResponse.json({ error: "Not enough Drive storage left for this file" }, { status: 413 });
+	try {
+		await assertStorageAvailable(env, db, ownerId, size);
+	} catch (error) {
+		if (error instanceof StorageLimitError) return NextResponse.json({ error: "Not enough storage left for this file" }, { status: 413 });
+		throw error;
+	}
 
 	const id = newId("drv");
 	const key = driveObjectKey(ownerId, id);

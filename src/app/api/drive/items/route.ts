@@ -7,7 +7,7 @@ import { getDriveChain, getDriveItem, getDriveRole, toDriveItemDtos, withoutTras
 import { canEditDrive, normalizeDriveName, toDriveCrumbs } from "@/lib/drive/utils";
 import { driveTypesCondition, parseDriveCategories } from "@/lib/drive/categories";
 import { listDriveAttachments } from "@/lib/drive/attachments";
-import { getDriveStorageLimit, getDriveStorageUsed } from "@/lib/drive/storage";
+import { getStorageLimit, getStorageUsage } from "@/lib/storage/usage";
 import type { DriveRole } from "@/lib/drive/types";
 import { escapeLike } from "@/db/sql";
 
@@ -23,7 +23,8 @@ export async function GET(request: Request) {
 	// With a type filter, files must match but folders stay listed so you can still browse into them.
 	const typeFilter = types.length ? or(eq(driveItems.kind, "folder"), driveTypesCondition(types))! : undefined;
 
-	const meta = { storageUsed: await getDriveStorageUsed(db, user.id), storageLimit: await getDriveStorageLimit(env) };
+	const usage = await getStorageUsage(db, user.id);
+	const meta = { storageUsed: usage.total, storageLimit: await getStorageLimit(env), storageMail: usage.mail + usage.attachments, storageDrive: usage.drive };
 	const respond = (items: Awaited<ReturnType<typeof toDriveItemDtos>>, extra: { path?: ReturnType<typeof toDriveCrumbs>; role: DriveRole }) => NextResponse.json({ items, path: extra.path ?? [], role: extra.role, ...meta });
 
 	if (parentId) {

@@ -1,5 +1,5 @@
 export interface GeneralSettings {
 	outboundAttachmentMaxMb: number;
-	/** Per-user Drive cap in GB; null when unlimited. */
-	driveStorageLimitGb: number | null;
+	/** Per-user storage cap in GB across mail, attachments and Drive; null when unlimited. */
+	storageLimitGb: number | null;
 }

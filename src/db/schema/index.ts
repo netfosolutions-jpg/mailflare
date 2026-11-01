@@ -293,6 +293,8 @@ export const messages = sqliteTable(
 		textBody: text("text_body"),
 		htmlBody: text("html_body"),
 		rawR2Key: text("raw_r2_key"),
+		/** Bytes of the raw MIME object in the bucket; 0 when none is stored. Counted toward the user's storage cap. */
+		size: integer("size").notNull().default(0),
 		status: text("status").notNull().default("received"),
 		read: bool("read").notNull().default(false),
 		starred: bool("starred").notNull().default(false),
@@ -320,6 +322,7 @@ export const messages = sqliteTable(
 		index("messages_thread_idx").on(t.mailboxId, t.threadId),
 		index("messages_provider_message_idx").on(t.mailboxId, t.providerMessageId),
 		index("messages_raw_r2_key_idx").on(t.rawR2Key),
+		index("messages_user_size_idx").on(t.userId, t.size),
 		index("messages_trashed_at_idx").on(t.trashedAt),
 		index("messages_inbox_page_idx").on(
 			t.mailboxId,
@@ -878,8 +881,8 @@ export const appSettings = sqliteTable("app_settings", {
 	id: text("id").primaryKey(),
 	appName: text("app_name").notNull().default("Mailflare"),
 	outboundAttachmentMaxMb: integer("outbound_attachment_max_mb").notNull().default(25),
-	/** Per-user Drive storage cap in bytes; null means unlimited. */
-	driveStorageLimitBytes: integer("drive_storage_limit_bytes"),
+	/** Per-user storage cap in bytes across mail, attachments and Drive; null means unlimited. */
+	storageLimitBytes: integer("storage_limit_bytes"),
 	resendApiKey: text("resend_api_key"),
 	/** JSON: AWS access key, secret and region (see src/lib/aws/config.ts). */
 	awsConfig: text("aws_config"),
