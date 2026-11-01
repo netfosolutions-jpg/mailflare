@@ -1,5 +1,6 @@
 "use client";
 
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -37,7 +38,7 @@ export default function PublicBookingListPage() {
 			{loading ? <BookingListSkeleton /> : error ? <p className="rounded-2xl border border-neutral-200 bg-white p-6 text-sm text-neutral-600 shadow-sm">{error}</p> : events.length === 0 ? <p className="rounded-2xl border border-neutral-200 bg-white p-6 text-sm text-neutral-600">{t("public.noMeetings")}</p> : <div className="page-transition-enter space-y-3">{events.map((event) => <Link key={event.id} href={username ? `/c/${username}/${event.slug}` : `/book/${userId}/${event.id}`} className="group flex items-center gap-4 rounded-2xl bg-white p-5 transition-colors"><div className="min-w-0 flex-1"><h2 className="font-semibold group-hover:text-blue-700">{event.name}</h2>{event.description && <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-sm text-neutral-600">{event.description}</p>}<p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-neutral-500"><span className="inline-flex items-center gap-1"><Clock3 className="h-4 w-4" />{t("public.minutesLong", { count: event.durationMinutes })}</span>{event.location && <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" />{event.location}</span>}</p></div><ArrowRight className="h-5 w-5 text-neutral-400 group-hover:text-blue-700" /></Link>)}</div>}
 			<div className="mt-auto flex min-w-0 flex-wrap items-center justify-between gap-3 pt-10 text-neutral-700">
 				<div className="w-44"><LanguageSelector /></div>
-				<img src={branding.iconUrl} width={24} height={24} alt={branding.appName || "Mailflare"} />
+				<img src={branding.iconUrl} width={24} height={24} alt={branding.appName || DEFAULT_APP_NAME} />
 				<span className="truncate font-semibold">{branding.appName}</span>
 			</div>
 		</div>

@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { appSettings } from "@/db/schema";
@@ -146,7 +147,7 @@ export async function getSesReceivingView(env: CloudflareEnv, domain: DomainRow)
 	const bucketOk = !!state && await attempt(() => bucketExists(config, state.bucket));
 	steps.push({ key: "bucket", label: "S3 bucket for raw mail", ok: bucketOk, detail: state?.bucket });
 	const subscribed = !!state && await attempt(async () => (await listSubscriptions(config, state.topicArn)).some((subscription) => subscription.endpoint === state.endpoint && subscription.confirmed));
-	steps.push({ key: "topic", label: "SNS topic delivering to Mailflare", ok: subscribed, detail: state && !subscribed ? "Subscription not confirmed yet" : undefined });
+	steps.push({ key: "topic", label: `SNS topic delivering to ${DEFAULT_APP_NAME}`, ok: subscribed, detail: state && !subscribed ? "Subscription not confirmed yet" : undefined });
 	const ruleOk = !!state && await attempt(() => describeReceiptRule(config, state.ruleSet, ruleName(domain.hostname)));
 	steps.push({ key: "rule", label: "SES receipt rule for this domain", ok: ruleOk, detail: ruleOk ? state?.ruleSet : undefined });
 	const mxOk = await hasMx(env, domain, mx);

@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { and, eq } from "drizzle-orm";
 import { agentDraftMetadata, messages } from "@/db/schema";
 import { sendEmail } from "@/lib/email/send";
@@ -80,7 +81,7 @@ export const emailSubmissionSet: JmapMethodHandler = async (ctx, args) => {
 		// AI drafts must pass the human review step that /api/send enforces.
 		const [agentDraft] = await ctx.db.select({ draftId: agentDraftMetadata.draftId }).from(agentDraftMetadata).where(eq(agentDraftMetadata.draftId, draft.id)).limit(1);
 		if (agentDraft) {
-			notCreated[creationId] = { type: "forbidden", description: "Review and confirm this AI draft in Mailflare before sending" };
+			notCreated[creationId] = { type: "forbidden", description: `Review and confirm this AI draft in ${DEFAULT_APP_NAME} before sending` };
 			continue;
 		}
 		try {

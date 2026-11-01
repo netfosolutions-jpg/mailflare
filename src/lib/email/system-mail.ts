@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { and, asc, eq, ne } from "drizzle-orm";
 import { getDb } from "@/db";
 import { domains, mailboxes, users } from "@/db/schema";
@@ -63,5 +64,5 @@ export async function pickSystemSender(
 	const usable = rows.filter((row) => row.provider !== "cloudflare" || row.cloudflareSending);
 	const chosen = usable.find((row) => row.role === "admin") ?? usable[0];
 	if (!chosen) return null;
-	return { address: `${chosen.localPart}@${chosen.hostname}`, name: chosen.displayName ?? "Mailflare" };
+	return { address: `${chosen.localPart}@${chosen.hostname}`, name: chosen.displayName ?? DEFAULT_APP_NAME };
 }

@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import type { AppDatabase } from "@/db";
@@ -204,7 +205,7 @@ export async function sendTestDelivery(
 			messageId: "test",
 			from: "postmaster@example.com",
 			to: "inbox@example.com",
-			subject: "Mailflare test delivery",
+			subject: `${DEFAULT_APP_NAME} test delivery`,
 		},
 	});
 	const delivery = await createDelivery(db, hook.id, "message.inbound", body);

@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { dialectOf, listColumnNames, listTableNames, quoteIdentifier } from "@/db/introspect";
 import type { DatabaseDialect } from "@/db/dialect";
 import type { BackupTableGroupId, DatabaseBackupDocument, DatabaseBackupTable, DatabaseRecord } from "./types";
@@ -133,8 +134,8 @@ export async function restoreDatabaseRecords(db: D1Database, content: ArrayBuffe
 
 function parseDatabaseBackup(content: ArrayBuffer): DatabaseBackupDocument {
 	let value: unknown;
-	try { value = JSON.parse(new TextDecoder().decode(content)); } catch { throw new Error("The selected file is not a valid Mailflare backup"); }
-	if (!isDatabaseBackupDocument(value)) throw new Error("The selected file is not a valid Mailflare backup");
+	try { value = JSON.parse(new TextDecoder().decode(content)); } catch { throw new Error(`The selected file is not a valid ${DEFAULT_APP_NAME} backup`); }
+	if (!isDatabaseBackupDocument(value)) throw new Error(`The selected file is not a valid ${DEFAULT_APP_NAME} backup`);
 	return value;
 }
 

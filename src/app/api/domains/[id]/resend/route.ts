@@ -6,6 +6,7 @@ import { hasValidSessionMutationOrigin } from "@/lib/auth/origin";
 import { getDomainForUser } from "@/lib/domains/service";
 import { ResendRestrictedKeyError } from "@/lib/email/resend-api";
 import { getResendKeyStatus } from "@/lib/email/outbound-provider";
+import { getBranding } from "@/lib/branding/service";
 import { sendSystemEmail } from "@/lib/email/system-mail";
 import { getResendDomainView, setupResendDomain, verifyResendDomainView } from "@/lib/domains/resend-domain";
 
@@ -43,7 +44,7 @@ export async function POST(request: Request, { params }: Params) {
 		if (body.action === "test") {
 			const sent = await sendSystemEmail(env, {
 				to: user.email,
-				subject: "Mailflare test email",
+				subject: `${(await getBranding(env)).appName} test email`,
 				text: `This message confirms ${domain.hostname} can send mail through Resend.`,
 				hostname: domain.hostname,
 			});

@@ -1,10 +1,11 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import type { ResendDomain, ResendReceivedEmail, ResendWebhook } from "@/lib/email/resend-api-types";
 
 const RESEND_API = "https://api.resend.com";
 
 export class ResendRestrictedKeyError extends Error {
 	constructor() {
-		super("This Resend key can only send mail, so Mailflare cannot add or check domains. Add the domain in the Resend dashboard, or use a full-access key.");
+		super(`This Resend key can only send mail, so ${DEFAULT_APP_NAME} cannot add or check domains. Add the domain in the Resend dashboard, or use a full-access key.`);
 	}
 }
 

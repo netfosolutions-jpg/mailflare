@@ -1,9 +1,13 @@
 import type { MetadataRoute } from "next";
+import { getHomeBranding } from "./home-server-utils";
 
-export default function manifest(): MetadataRoute.Manifest {
+export const dynamic = "force-dynamic";
+
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+	const { appName } = await getHomeBranding();
 	return {
-		name: "Mailflare",
-		short_name: "Mailflare",
+		name: appName,
+		short_name: appName,
 		description: "Email, anywhere.",
 		id: "/",
 		scope: "/",

@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { getDb } from "@/db";
 import { pushDevices } from "@/db/schema";
@@ -75,14 +76,14 @@ export async function unregisterPushDevice(env: CloudflareEnv, apiKeyId: string)
 export async function buildApnsPayload(device: { publicKey: string | null; previews: boolean }, accountId: string, message: NewMessageNotification) {
 	const base = { v: 1, accountId, mailboxId: message.mailboxId };
 	if (!device.previews || !device.publicKey) {
-		return { aps: { alert: { title: "Mailflare", body: "New message" }, "mutable-content": 1, "content-available": 1, sound: "default", "thread-id": message.mailboxId }, mf: base };
+		return { aps: { alert: { title: DEFAULT_APP_NAME, body: "New message" }, "mutable-content": 1, "content-available": 1, sound: "default", "thread-id": message.mailboxId }, mf: base };
 	}
 	const preview = new TextEncoder().encode(
 		JSON.stringify({ from: message.from, fromName: message.fromName, subject: message.subject, messageId: message.messageId }),
 	);
 	return {
 		// Shown only if the extension cannot decrypt in time.
-		aps: { alert: { title: "Mailflare", body: "New message" }, "mutable-content": 1, "content-available": 1, sound: "default", "thread-id": message.mailboxId },
+		aps: { alert: { title: DEFAULT_APP_NAME, body: "New message" }, "mutable-content": 1, "content-available": 1, sound: "default", "thread-id": message.mailboxId },
 		mf: { ...base, enc: await encryptPreview(device.publicKey, preview) },
 	};
 }

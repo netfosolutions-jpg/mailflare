@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { appSettings } from "@/db/schema";
@@ -90,7 +91,7 @@ export async function getResendReceivingView(env: CloudflareEnv, domain: DomainR
 		steps.push({ key: "verified", label: "Domain verified", ok: resend?.status === "verified", detail: resend ? resend.status.replace(/_/g, " ") : undefined });
 		const hooks = await listResendWebhooks(key.apiKey);
 		const hookOk = hooks.some((webhook) => webhook.endpoint === resendWebhookUrl(origin)) && !!(await getResendWebhookSecret(env));
-		steps.push({ key: "webhook", label: "Webhook delivering mail to Mailflare", ok: hookOk });
+		steps.push({ key: "webhook", label: `Webhook delivering mail to ${DEFAULT_APP_NAME}`, ok: hookOk });
 		return { ...base, steps, ready: steps.every((step) => step.ok), mx: mx?.value ?? null, restrictedKey: false };
 	} catch (error) {
 		if (error instanceof ResendRestrictedKeyError) return { ...base, steps, ready: false, mx: null, restrictedKey: true };

@@ -3,9 +3,10 @@ import { getDb } from "@/db";
 import { appSettings } from "@/db/schema";
 import type { Branding } from "./types";
 import { getLicenseEntitlements } from "@/lib/licenses/service";
+import { DEFAULT_APP_NAME, UPSTREAM_APP_NAME } from "./defaults";
 
+export { DEFAULT_APP_NAME } from "./defaults";
 export const APP_SETTINGS_ID = "default";
-export const DEFAULT_APP_NAME = "Mailflare";
 export const BRANDING_ICON_KEY = "branding/app-icon";
 
 export async function getBranding(env: CloudflareEnv): Promise<Branding> {
@@ -20,8 +21,10 @@ export async function getBranding(env: CloudflareEnv): Promise<Branding> {
 			.from(appSettings)
 			.where(eq(appSettings.id, APP_SETTINGS_ID))
 			.limit(1);
+		// Migration 0012 seeds the row with upstream's name, so that value means "not customized".
+		const appName = settings?.appName && settings.appName !== UPSTREAM_APP_NAME ? settings.appName : DEFAULT_APP_NAME;
 		return {
-			appName: settings?.appName || DEFAULT_APP_NAME,
+			appName,
 			hasCustomIcon: !!settings?.iconKey,
 			canCustomizeBranding: true,
 		};

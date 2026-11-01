@@ -1,5 +1,6 @@
 "use client";
 
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -128,7 +129,7 @@ export default function PublicBookingEventPage() {
 						<div className="mb-4 max-w-48"><LanguageSelector /></div>
 						<div className="flex min-w-0 items-center gap-3 max-sm:order-first max-sm:mb-5">
 
-							<img src={branding.iconUrl} width={24} height={24} alt={branding.appName || "Mailflare"} />
+							<img src={branding.iconUrl} width={24} height={24} alt={branding.appName || DEFAULT_APP_NAME} />
 
 							<span className="truncate font-semibold">{branding.appName}</span>
 						</div>

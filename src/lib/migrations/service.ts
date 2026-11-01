@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { isExternalDatabase } from "@/db/external";
 import type { DatabaseDialect } from "@/db/dialect";
 import sqliteBundle from "./bundle.json";
@@ -59,7 +60,7 @@ export async function applyPendingMigrations(db: D1Database): Promise<MigrationR
 	const { table, create } = MIGRATION_TABLES[dialect];
 	const initial = await getMigrationStatus(db);
 	if (initial.unknown.length > 0) {
-		throw new Error("The database contains migrations that are not part of this Mailflare release.");
+		throw new Error(`The database contains migrations that are not part of this ${DEFAULT_APP_NAME} release.`);
 	}
 
 	await db.prepare(create).run();

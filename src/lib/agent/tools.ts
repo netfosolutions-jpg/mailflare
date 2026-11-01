@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { and, desc, eq, isNull, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { scheduledMessageCondition } from "@/lib/email/scheduled";
@@ -164,7 +165,7 @@ export async function runEmailTool(context: AgentToolContext, name: EmailToolNam
 	}
 	if (name === "edit_draft") return editAgentDraft(context, input as unknown as AgentDraftEditInput);
 	if (name === "review_draft_send") {
-		if (context.origin !== "chat") throw new Error("Open the draft in Mailflare to review delivery");
+		if (context.origin !== "chat") throw new Error(`Open the draft in ${DEFAULT_APP_NAME} to review delivery`);
 		const draft = await ownMessage(context, input.draftId as string);
 		if (draft.status !== "draft") throw new Error("Draft not found in the selected mailbox");
 		const result = await requestAgentSend(context.env, context.user, input.draftId as string, input.expectedRevision as number);

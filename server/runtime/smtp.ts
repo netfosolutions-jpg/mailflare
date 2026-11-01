@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { readFileSync } from "node:fs";
 import { SMTPServer } from "smtp-server";
 import type { SMTPServerSession } from "smtp-server";
@@ -76,7 +77,7 @@ export function startSmtpListener(
 		disabledCommands: options.tls ? ["AUTH"] : ["AUTH", "STARTTLS"],
 		...(options.tls ? { key: readFileSync(options.tls.keyPath), cert: readFileSync(options.tls.certPath) } : {}),
 		size: options.maxSize,
-		banner: "Mailflare",
+		banner: DEFAULT_APP_NAME,
 		onData(stream, session: SMTPServerSession, callback) {
 			const chunks: Buffer[] = [];
 			let received = 0;

@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { Branding } from "@/lib/branding/types";
 import type { BrandingContextValue } from "./branding-provider-types";
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { DEFAULT_BRANDING, fetchBranding } from "./branding-provider-utils";
 
 const BrandingContext = createContext<BrandingContextValue | null>(null);
@@ -15,7 +16,7 @@ export function BrandingProvider({ children, initialBranding }: { children: Reac
 		const nextBranding = await fetchBranding();
 		setBranding(nextBranding);
 		setIconVersion(Date.now());
-		if (document.title === "Mailflare" || document.title === branding.appName) {
+		if (document.title === DEFAULT_APP_NAME || document.title === branding.appName) {
 			document.title = nextBranding.appName;
 		}
 	}

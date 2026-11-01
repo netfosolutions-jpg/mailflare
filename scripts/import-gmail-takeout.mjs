@@ -57,7 +57,7 @@ class MailflareClient {
 
 	static async signIn(baseUrl, email) {
 		const url = baseUrl.replace(/\/$/, "");
-		const password = process.env.MAILFLARE_PASSWORD || (await prompt(`Mailflare password for ${email}: `, { hidden: true }));
+		const password = process.env.MAILFLARE_PASSWORD || (await prompt(`NetfoMailBox password for ${email}: `, { hidden: true }));
 		const login = await fetch(`${url}/api/auth/login`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json", Origin: url },
@@ -201,7 +201,7 @@ async function main() {
 	console.log(`\n\n${summary.read} messages in file.`);
 	for (const [key, count] of Object.entries(summary.destinations).sort((a, b) => b[1] - a[1])) console.log(`  ${String(count).padStart(7)}  ${key}`);
 	if (summary.ignored) console.log(`  ${summary.ignored} spam/trash messages skipped by option`);
-	if (summary.tooLarge) console.log(`  ${summary.tooLarge} messages over 24 MB skipped (Mailflare's upload size limit)`);
+	if (summary.tooLarge) console.log(`  ${summary.tooLarge} messages over 24 MB skipped (NetfoMailBox's upload size limit)`);
 	if (!dryRun) {
 		console.log(`Imported ${summary.imported}, skipped ${summary.skipped} (already present).`);
 		if (summary.failed) {

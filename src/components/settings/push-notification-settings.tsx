@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useBranding } from "@/components/branding-provider";
 import { Switch } from "@/components/ui/switch";
 import {
 	disablePushNotifications,
@@ -27,6 +28,7 @@ const initialState: State = {
 };
 
 export function PushNotificationSettings() {
+	const { appName } = useBranding();
 	const [state, setState] = useState<State>(initialState);
 
 	useEffect(() => {
@@ -54,9 +56,9 @@ export function PushNotificationSettings() {
 		!state.supported ||
 		(!state.configured && !state.subscribed) ||
 		(state.permission === "denied" && !state.subscribed);
-	let description = "Get new mail alerts even when Mailflare is closed.";
-	if (!state.supported) description = "This browser does not support Web Push for Mailflare.";
-	else if (!state.configured) description = "Web Push has not been configured on this Mailflare server.";
+	let description = `Get new mail alerts even when ${appName} is closed.`;
+	if (!state.supported) description = `This browser does not support Web Push for ${appName}.`;
+	else if (!state.configured) description = `Web Push has not been configured on this ${appName} server.`;
 	else if (state.permission === "denied") description = "Notifications are blocked in your browser settings.";
 
 	return (

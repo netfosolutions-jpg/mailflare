@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import type { OpenClassification, OpenRequestInfo } from "./types";
 
 /** Transparent 1x1 GIF. */
@@ -88,7 +89,7 @@ function detectDevice(userAgent: string): string | null {
 function detectClient(userAgent: string): { client: string | null; proxied: boolean } {
 	if (/GoogleImageProxy|ggpht\.com/i.test(userAgent)) return { client: "Gmail", proxied: true };
 	if (/YahooMailProxy/i.test(userAgent)) return { client: "Yahoo Mail", proxied: true };
-	if (/Mailflare-Remote-Images/i.test(userAgent)) return { client: "Mailflare", proxied: true };
+	if (/Mailflare-Remote-Images/i.test(userAgent)) return { client: DEFAULT_APP_NAME, proxied: true };
 	if (/Outlook-iOS|Outlook-Android|Microsoft Outlook|MSOffice|ms-office|Microsoft Office/i.test(userAgent)) return { client: "Outlook", proxied: false };
 	if (/Thunderbird/i.test(userAgent)) return { client: "Thunderbird", proxied: false };
 	if (/AppleWebKit/i.test(userAgent) && !/Chrome|CriOS|Safari\//i.test(userAgent) && /iPhone|iPad|Macintosh/i.test(userAgent)) {

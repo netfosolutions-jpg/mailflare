@@ -1,3 +1,4 @@
+import { DEFAULT_APP_NAME } from "@/lib/branding/defaults";
 import { getDb } from "@/db";
 import { authenticateApiRequest, hasScope } from "@/lib/api/key-auth";
 import { LIMITS } from "./constants";
@@ -28,7 +29,7 @@ export async function handleJmapRequest(request: Request, env: CloudflareEnv): P
 	if (!auth) {
 		return new Response(JSON.stringify({ error: "Unauthorized" }), {
 			status: 401,
-			headers: { ...JSON_HEADERS, "WWW-Authenticate": 'Basic realm="Mailflare JMAP", Bearer' },
+			headers: { ...JSON_HEADERS, "WWW-Authenticate": `Basic realm="${DEFAULT_APP_NAME} JMAP", Bearer` },
 		});
 	}
 	if (!hasScope(auth.scopes, "jmap")) {
