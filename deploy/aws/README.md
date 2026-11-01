@@ -118,3 +118,23 @@ by tag, schedule daily, retain 14 snapshots. Tag the instance's volume:
 ```bash
 aws ec2 create-tags --resources VOLUME_ID --tags Key=backup,Value=mailflare
 ```
+
+## Sharing a server that already runs Caddy
+
+When Mailflare lives on a host whose own Compose project already serves HTTPS
+with Caddy (CarSens does), use `docker-compose.shared.yml` instead of
+`docker-compose.aws.yml`: it starts only the Mailflare container, publishes
+port 25, and joins the other project's network (`PROXY_NETWORK`, default
+`deploy_default`). Add this site to that project's Caddyfile and reload Caddy:
+
+```
+mail.netfo.co {
+	encode zstd gzip
+	reverse_proxy mailflare:3000
+}
+```
+
+Set `TRUST_PROXY=1` in `.env.aws` so client addresses come from the proxy
+headers, open port 25 on that host's security group, and skip `bootstrap.sh`
+(Docker is already installed): clone the branch, copy `.env.aws`, then
+`docker compose -f docker-compose.shared.yml up -d --build`.

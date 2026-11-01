@@ -1,0 +1,28 @@
+# Mailflare beside another Compose project that already owns ports 80 and 443
+# with Caddy (the CarSens server). Mailflare joins that project's network so
+# its Caddy can `reverse_proxy mailflare:3000` for mail.netfo.co; only inbound
+# SMTP is published here. Start from this directory:
+#   docker compose -f docker-compose.shared.yml up -d --build
+# PROXY_NETWORK defaults to the network of a project living in a `deploy/` folder.
+services:
+  mailflare:
+    build: ../..
+    image: mailflare:aws
+    container_name: mailflare
+    restart: unless-stopped
+    env_file: .env.aws
+    ports:
+      - "25:25"
+    volumes:
+      - mailflare-data:/data
+    networks:
+      - default
+      - proxy
+
+volumes:
+  mailflare-data:
+
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-deploy_default}
