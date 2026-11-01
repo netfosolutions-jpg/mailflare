@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useBranding } from "@/components/branding-provider";
+import { usesDefaultBrand } from "@/components/branding-provider-utils";
 import { LanguageSelector } from "@/components/language-selector";
 import type { AuthShellProps } from "./types";
 
@@ -27,24 +28,30 @@ export function AuthShell({
       <main className="mx-auto grid min-h-dvh w-full max-w-4xl grid-rows-[auto_1fr] overflow-hidden bg-white sm:min-h-0 sm:grid-rows-none sm:rounded-4xl lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
         <section className="flex flex-col p-7 sm:p-10 lg:p-14">
           <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center overflow-hidden">
-              {iconFailed ? (
-                <Icon className="h-8 w-8 text-blue-600" />
-              ) : (
-                <img
-                  src={iconUrl}
-                  onError={() => {
-                    if (iconUrl !== "/icon-96.png") setIconUrl("/icon-96.png");
-                    else setIconFailed(true);
-                  }}
-                  alt=""
-                  className="h-8 w-8 object-contain"
-                />
-              )}
-            </span>
-            <span className="truncate text-md font-semibold text-neutral-800">
-              {branding.appName}
-            </span>
+            {usesDefaultBrand(branding) ? (
+              <img src="/logo.png" alt={branding.appName} className="h-7 w-auto dark:brightness-0 dark:invert" />
+            ) : (
+              <>
+                <span className="flex items-center justify-center overflow-hidden">
+                  {iconFailed ? (
+                    <Icon className="h-8 w-8 text-blue-600" />
+                  ) : (
+                    <img
+                      src={iconUrl}
+                      onError={() => {
+                        if (iconUrl !== "/icon-96.png") setIconUrl("/icon-96.png");
+                        else setIconFailed(true);
+                      }}
+                      alt=""
+                      className="h-8 w-8 object-contain"
+                    />
+                  )}
+                </span>
+                <span className="truncate text-md font-semibold text-neutral-800">
+                  {branding.appName}
+                </span>
+              </>
+            )}
           </div>
 
           <div className="mt-10 sm:mt-6 lg:mt-8">
