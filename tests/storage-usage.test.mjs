@@ -72,14 +72,14 @@ test("usage for many users groups per user", async (t) => {
 test("null and zero limits mean unlimited", async (t) => {
 	const f = await fixture(t);
 	assert.equal(await getStorageLimit(f.env), null);
-	f.database.db.exec("INSERT INTO app_settings (id, storage_limit_bytes, updated_at) VALUES ('default', 0, 1)");
+	f.database.db.exec("INSERT INTO app_settings (id, storage_limit_bytes, updated_at) VALUES ('default', 0, 1) ON CONFLICT(id) DO UPDATE SET storage_limit_bytes = excluded.storage_limit_bytes");
 	assert.equal(await getStorageLimit(f.env), null);
 	await assertStorageAvailable(f.env, f.db, "a", 10 ** 12);
 });
 
 test("assertStorageAvailable allows the exact boundary and refuses one byte more", async (t) => {
 	const f = await fixture(t);
-	f.database.db.exec("INSERT INTO app_settings (id, storage_limit_bytes, updated_at) VALUES ('default', 1400, 1)");
+	f.database.db.exec("INSERT INTO app_settings (id, storage_limit_bytes, updated_at) VALUES ('default', 1400, 1) ON CONFLICT(id) DO UPDATE SET storage_limit_bytes = excluded.storage_limit_bytes");
 	assert.equal(await getStorageLimit(f.env), 1400);
 	await assertStorageAvailable(f.env, f.db, "a", 20);
 	await assert.rejects(
