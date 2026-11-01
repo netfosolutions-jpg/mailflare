@@ -1,0 +1,28 @@
+services:
+  mailflare:
+    build: ../..
+    image: mailflare:aws
+    restart: unless-stopped
+    env_file: .env.aws
+    ports:
+      - "25:25"   # inbound SMTP; the web app is only reachable through Caddy
+    volumes:
+      - mailflare-data:/data
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - mailflare
+
+volumes:
+  mailflare-data:
+  caddy-data:
+  caddy-config:
