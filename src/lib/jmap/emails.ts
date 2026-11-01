@@ -39,6 +39,7 @@ type DraftRow = {
 	threadId?: string | null;
 	providerMessageId?: string | null;
 	rawR2Key?: string | null;
+	size?: number;
 	createdAt?: Date;
 };
 
@@ -66,6 +67,7 @@ async function insertDraft(ctx: JmapContext, row: DraftRow): Promise<string> {
 		threadId: row.threadId ?? null,
 		providerMessageId: row.providerMessageId ?? null,
 		rawR2Key: row.rawR2Key ?? null,
+		size: row.size ?? 0,
 		...(row.createdAt ? { createdAt: row.createdAt } : {}),
 	});
 	return id;
@@ -405,7 +407,7 @@ async function importEmail(ctx: JmapContext, value: Record<string, unknown>, wri
 	let rawR2Key: string | null = null;
 	try {
 		rawR2Key = await storeRawDraftMime(ctx, id, upload.content);
-		await ctx.db.update(messages).set({ rawR2Key }).where(eq(messages.id, id));
+		await ctx.db.update(messages).set({ rawR2Key, size: upload.content.byteLength }).where(eq(messages.id, id));
 		if (parsed.attachments.length) await storeMessageAttachments(ctx.env, id, parsed.attachments);
 	} catch (error) {
 		try {
