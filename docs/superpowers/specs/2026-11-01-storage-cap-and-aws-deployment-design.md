@@ -1,7 +1,7 @@
 # Combined per-user storage cap and AWS deployment
 
 Date: 2026-11-01
-Status: approved in conversation, implementation pending
+Status: implemented on branch `storage-cap` (2026-11-01). Tests, type check, lint and the Node build pass; the AWS steps in `deploy/aws/README.md` are still to be run by the owner.
 
 ## Goal
 
