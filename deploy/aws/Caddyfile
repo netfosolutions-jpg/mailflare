@@ -1,0 +1,4 @@
+mail.carsens.co {
+	encode gzip
+	reverse_proxy mailflare:3000
+}
