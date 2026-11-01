@@ -4,6 +4,8 @@ export type AccountsTableProps = {
 	accounts: Account[];
 	currentUserId?: string;
 	isPrimaryAdmin: boolean;
+	/** Per-user storage cap in bytes; null means unlimited, so no usage is flagged. */
+	storageLimit: number | null;
 	loading: boolean;
 	selected: Set<string>;
 	onSelectedChange: (selected: Set<string>) => void;
