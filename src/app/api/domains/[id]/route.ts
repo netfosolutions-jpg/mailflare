@@ -6,6 +6,7 @@ import { getEnv } from "@/lib/cloudflare";
 import { requireUser } from "@/lib/auth/cookies";
 import { canManageDomains } from "@/lib/auth/admin";
 import { getDomainForUser, removeDomainForUser } from "@/lib/domains/service";
+import { isManualZone } from "@/lib/domains/provision";
 import { hasValidSessionMutationOrigin } from "@/lib/auth/origin";
 
 type Params = { params: Promise<{ id: string }> };
@@ -32,8 +33,15 @@ export async function PATCH(request: Request, { params }: Params) {
 	}
 	const domain = await getDomainForUser(env, user.id, id);
 	if (!domain) return NextResponse.json({ error: "Not found" }, { status: 404 });
-	await getDb(env).update(domains).set({ dnsSkipped: body.dnsSkipped }).where(eq(domains.id, id));
-	return NextResponse.json({ domain: { ...domain, dnsSkipped: body.dnsSkipped } });
+	// A manually managed zone has no provider setup to activate it, and inbound
+	// routing only resolves active domains, so the operator confirming the
+	// records is what makes such a domain live.
+	const activate = !body.dnsSkipped && isManualZone(domain.zoneId) && domain.status !== "active";
+	await getDb(env)
+		.update(domains)
+		.set({ dnsSkipped: body.dnsSkipped, ...(activate ? { status: "active" as const } : {}) })
+		.where(eq(domains.id, id));
+	return NextResponse.json({ domain: { ...domain, dnsSkipped: body.dnsSkipped, ...(activate ? { status: "active" as const } : {}) } });
 }
 
 export async function DELETE(request: Request, { params }: Params) {
