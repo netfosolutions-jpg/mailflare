@@ -4,7 +4,8 @@ import { getDb } from "@/db";
 import { calendarEvents } from "@/db/schema";
 import { getEnv } from "@/lib/cloudflare";
 import { newId } from "@/lib/ids";
-import { sendEmail } from "@/lib/email/send";
+import { sendEmail, type SendEmailInput } from "@/lib/email/send";
+import { StorageLimitError } from "@/lib/storage/usage";
 import { createCalendarInvitation } from "@/lib/calendar/utils";
 import { normalizeCalendarColor } from "@/lib/calendar/colors";
 import { normalizeReminderMinutes } from "@/lib/calendar/reminder-utils";
@@ -12,6 +13,16 @@ import { DEFAULT_REPEAT_DAYS, normalizeCalendarRepeat, normalizeCalendarRepeatDa
 import type { CalendarEventInput } from "./types";
 import { getRequestTimeZone, normalizeTimeZone } from "@/lib/time/utils";
 import { authorizeCalendarRequest, calendarKeyCanSendInvitations } from "@/lib/calendar/api-auth";
+
+/** The event is already saved when invitations go out, so a full storage cap skips them instead of failing the save. */
+async function sendInvitation(env: CloudflareEnv, input: SendEmailInput): Promise<void> {
+	try {
+		await sendEmail(env, input);
+	} catch (error) {
+		if (!(error instanceof StorageLimitError)) throw error;
+		console.warn("Storage limit reached; skipped automatic send", { userId: input.userId });
+	}
+}
 
 export async function GET(request: Request) {
 	const env = getEnv();
@@ -42,7 +53,7 @@ export async function POST(request: Request) {
 	await getDb(env).insert(calendarEvents).values(savedEvent);
 	if (attendees.length && input.mailboxId) {
 		const calendarFile = createCalendarInvitation({ ...event, uid: event.id });
-		await Promise.all(attendees.map((to) => sendEmail(env, { userId: user.id, mailboxId: input.mailboxId!, from: input.from ?? "", to, subject: `Invitation: ${event.title}`, text: event.description || `You are invited to ${event.title}.`, attachments: [{ filename: "invite.ics", type: "text/calendar; charset=utf-8", content: calendarFile }] })));
+		await Promise.all(attendees.map((to) => sendInvitation(env, { userId: user.id, mailboxId: input.mailboxId!, from: input.from ?? "", to, subject: `Invitation: ${event.title}`, text: event.description || `You are invited to ${event.title}.`, attachments: [{ filename: "invite.ics", type: "text/calendar; charset=utf-8", content: calendarFile }] })));
 	}
 	return NextResponse.json({ event: savedEvent });
 }

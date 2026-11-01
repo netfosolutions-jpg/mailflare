@@ -5,6 +5,7 @@ import { formatEmailAddress, normalizeEmailAddress } from "@/lib/email/address";
 import { resolveInboundAddress } from "@/lib/email/routing";
 import { sendEmail } from "@/lib/email/send";
 import { newId } from "@/lib/ids";
+import { StorageLimitError } from "@/lib/storage/usage";
 import type { MailboxAutoReplyInput } from "./auto-reply-types";
 
 const autoReplyIntervalMs = 24 * 60 * 60 * 1000;
@@ -52,15 +53,22 @@ export async function sendMailboxAutoReply(
 		headers.References = input.incomingMessageId;
 	}
 
-	await sendEmail(env, {
-		userId: input.userId,
-		mailboxId: input.mailboxId,
-		from: formatEmailAddress(deliveredAddress, mailbox.displayName),
-		to: recipient,
-		subject: mailbox.autoReplySubject.trim() || "Out of office",
-		text: mailbox.autoReplyBody.trim(),
-		headers,
-	});
+	try {
+		await sendEmail(env, {
+			userId: input.userId,
+			mailboxId: input.mailboxId,
+			from: formatEmailAddress(deliveredAddress, mailbox.displayName),
+			to: recipient,
+			subject: mailbox.autoReplySubject.trim() || "Out of office",
+			text: mailbox.autoReplyBody.trim(),
+			headers,
+		});
+	} catch (error) {
+		// Nothing went out, so no delivery is recorded: the reply is tried again once the user frees space.
+		if (!(error instanceof StorageLimitError)) throw error;
+		console.warn("Storage limit reached; skipped automatic send", { userId: input.userId });
+		return;
+	}
 
 	await db
 		.insert(autoReplyDeliveries)

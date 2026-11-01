@@ -6,7 +6,8 @@ import { sendEmail } from "@/lib/email/send";
 import { decodeBase64Content } from "@/lib/email/attachments";
 import { readJsonBody } from "@/lib/http/request";
 import { RequestBodyTooLargeError } from "@/lib/http/errors";
-import { getSendErrorStatus } from "@/app/api/send/error-utils";
+import { getSendErrorStatus, STORAGE_LIMIT_SEND_ERROR } from "@/app/api/send/error-utils";
+import { StorageLimitError } from "@/lib/storage/usage";
 
 export async function POST(request: Request) {
 	const env = getEnv();
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
 		});
 		return NextResponse.json(result);
 	} catch (err) {
+		if (err instanceof StorageLimitError) return NextResponse.json({ error: STORAGE_LIMIT_SEND_ERROR }, { status: 413 });
 		const message = err instanceof Error ? err.message : "Send failed";
 		return NextResponse.json({ error: message }, { status: getSendErrorStatus(message) });
 	}

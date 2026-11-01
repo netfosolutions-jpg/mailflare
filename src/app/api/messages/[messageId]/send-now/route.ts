@@ -6,6 +6,8 @@ import { getCurrentUser } from "@/lib/auth/cookies";
 import { getEnv } from "@/lib/cloudflare";
 import { getMailboxAccessLevel } from "@/lib/mailboxes/access";
 import { sendScheduledMessageNow } from "@/lib/email/send";
+import { StorageLimitError } from "@/lib/storage/usage";
+import { STORAGE_LIMIT_SEND_ERROR } from "@/app/api/send/error-utils";
 
 /**
  * Sends a queued message now instead of waiting for its undo window or scheduled time.
@@ -42,6 +44,7 @@ export async function POST(
 			return NextResponse.json({ error: "This message is already on its way" }, { status: 409 });
 		}
 	} catch (error) {
+		if (error instanceof StorageLimitError) return NextResponse.json({ error: STORAGE_LIMIT_SEND_ERROR }, { status: 413 });
 		const detail = error instanceof Error ? error.message : "Send failed";
 		return NextResponse.json({ error: detail }, { status: 500 });
 	}

@@ -7,6 +7,7 @@ import { buildSnippet, parseRawMime } from "@/lib/email/parse";
 import { resolveThreadId } from "@/lib/email/threading";
 import { upsertContactFromAddress } from "@/lib/contacts/service";
 import { newId } from "@/lib/ids";
+import { assertStorageAvailable, StorageLimitError } from "@/lib/storage/usage";
 import { getImportMessagePlacement } from "./destination";
 import type { ImportDestination } from "./destination-types";
 import { applyImportHints, getImportMessageHints } from "./message-hints-utils";
@@ -39,6 +40,8 @@ export async function importMessagesToMailbox(
 				result.skipped += 1;
 			}
 		} catch (error) {
+			// A full cap stops the whole import so the job fails and keeps its cursor, instead of skipping every remaining message.
+			if (error instanceof StorageLimitError) throw error;
 			result.skipped += 1;
 			result.errors.push(`${message.filename}: ${describeImportError(error)}`);
 		}
@@ -76,6 +79,9 @@ async function importMessageToMailbox(
 		}
 		return false;
 	}
+
+	// Checked before the row and the object exist, so a refused message leaves nothing behind.
+	await assertStorageAvailable(env, db, input.userId, input.raw.byteLength);
 
 	const messageId = newId("msg");
 	const rawR2Key = `imports/${messageId}.eml`;
