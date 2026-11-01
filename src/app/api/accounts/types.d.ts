@@ -10,6 +10,8 @@ export type AccountListItem = {
 	mailboxId: string | null;
 	localPart: string | null;
 	hostname: string | null;
+	/** Bytes across mail, attachments and Drive. */
+	storageUsed?: number;
 };
 
 export type CreateAccountResult = {
@@ -23,5 +25,7 @@ export type CreateUserAccountInput = import("zod").output<typeof import("@/lib/v
 
 export type AccountListResponse = {
 	accounts?: AccountListItem[];
+	/** Per-user storage cap in bytes, or null when unlimited. */
+	storageLimit?: number | null;
 	error?: string;
 };

@@ -38,11 +38,15 @@ export type Account = {
 	mailboxId?: string | null;
 	localPart?: string | null;
 	hostname?: string | null;
+	/** Bytes across mail, attachments and Drive. */
+	storageUsed?: number;
 };
 
 export type AccountResponse = {
 	accounts?: Account[];
 	seats?: { limit: number | null; used: number };
+	/** Per-user storage cap in bytes, or null when unlimited. */
+	storageLimit?: number | null;
 	account?: Account;
 	error?: string;
 };

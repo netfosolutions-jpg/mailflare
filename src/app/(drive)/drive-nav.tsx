@@ -186,14 +186,17 @@ export function DriveNav({ onNavigate }: { onNavigate?: () => void }) {
 			{!compact && (
 				<div className="shrink-0 border-t border-neutral-200/70 px-4 py-3">
 					{storage && (
-						storage.limit ? (
-							<div className="mb-2">
-								<div role="progressbar" aria-label={t("drive.storageBar")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} className="mb-1.5 h-1.5 overflow-hidden rounded-full bg-neutral-200">
-									<div className={clsx("h-full rounded-full transition-[width]", percent >= 90 ? "bg-red-500" : "bg-blue-600")} style={{ width: `${percent}%` }} />
-								</div>
-								<p className="text-xs text-neutral-600">{t("drive.storageOf", { used: formatDriveSize(storage.used), total: formatDriveSize(storage.limit) })}</p>
-							</div>
-						) : <p className="mb-2 text-xs text-neutral-600">{t("drive.storageUsed", { size: formatDriveSize(storage.used) })}</p>
+						<div className="mb-2">
+							{storage.limit ? (
+								<>
+									<div role="progressbar" aria-label={t("drive.storageBar")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} className="mb-1.5 h-1.5 overflow-hidden rounded-full bg-neutral-200">
+										<div className={clsx("h-full rounded-full transition-[width]", percent >= 90 ? "bg-red-500" : "bg-blue-600")} style={{ width: `${percent}%` }} />
+									</div>
+									<p className="text-xs text-neutral-600">{t("drive.storageOf", { used: formatDriveSize(storage.used), total: formatDriveSize(storage.limit) })}</p>
+								</>
+							) : <p className="text-xs text-neutral-600">{t("drive.storageUsed", { size: formatDriveSize(storage.used) })}</p>}
+							<p className="text-xs text-neutral-500">{t("drive.storageBreakdown", { mail: formatDriveSize(storage.mail), drive: formatDriveSize(storage.drive) })}</p>
+						</div>
 					)}
 					<PoweredBy className="" />
 				</div>

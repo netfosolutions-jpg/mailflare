@@ -43,6 +43,7 @@ export default function AccountsPage() {
 	const [createOpen, setCreateOpen] = useState(false);
 	const [message, setMessage] = useState<string | null>(null);
 	const [seats, setSeats] = useState<AccountResponse["seats"] | null>(null);
+	const [storageLimit, setStorageLimit] = useState<number | null>(null);
 	const [teamRequired, setTeamRequired] = useState(false);
 	const [selected, setSelected] = useState<Set<string>>(new Set());
 	const [deleteOpen, setDeleteOpen] = useState(false);
@@ -52,12 +53,14 @@ export default function AccountsPage() {
 		const data = await fetchAccounts();
 		setAccounts(data.accounts ?? []);
 		setSeats(data.seats ?? null);
+		setStorageLimit(data.storageLimit ?? null);
 	}
 
 	useEffect(() => {
 		fetchAccounts().then(async (list) => {
 			setAccounts(list.accounts ?? []);
 			setSeats(list.seats ?? null);
+			setStorageLimit(list.storageLimit ?? null);
 			const response = await authFetch("/api/domains");
 			const data = (await response.json()) as { domains?: Domain[]; error?: string };
 			if (!response.ok) throw new Error(data.error ?? t("accounts.domainsFailed"));
@@ -116,7 +119,7 @@ export default function AccountsPage() {
 		<div className="flex items-center justify-between gap-4"><div><h1 className="text-2xl md:text-3xl font-medium text-neutral-900">{t("accounts.title")}</h1><p className="mt-2 text-sm text-neutral-500">{t("accounts.description")}</p>{seats && seats.limit !== null && <p className={`mt-1 text-sm ${seatsFull ? "text-amber-700" : "text-neutral-500"}`}>{t("accounts.seatsUsed", { used: seats.used, limit: seats.limit })}{seatsFull ? ` ${t("accounts.seatsFull")}` : ""}</p>}</div>{!teamRequired && canManage && <Button disabled={seatsFull} className={mobilePrimaryActionClass} onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" />{t("accounts.new")}</Button>}</div>
 		{message && !createOpen && <p role="alert" className="text-sm text-red-600">{message}</p>}
 		<div className="relative">{teamRequired && <LicenseRequiredOverlay required="Pro or Team"><div className="min-h-48 rounded-3xl bg-white" /></LicenseRequiredOverlay>}
-			<AccountsTable accounts={accounts} currentUserId={currentUser?.id} isPrimaryAdmin={!!currentUser?.isPrimaryAdmin} loading={loading} selected={selected} onSelectedChange={setSelected} onDeleteSelected={() => setDeleteOpen(true)} onRestore={restoreAccount} restoringId={restoringId} />
+			<AccountsTable accounts={accounts} currentUserId={currentUser?.id} isPrimaryAdmin={!!currentUser?.isPrimaryAdmin} storageLimit={storageLimit} loading={loading} selected={selected} onSelectedChange={setSelected} onDeleteSelected={() => setDeleteOpen(true)} onRestore={restoreAccount} restoringId={restoringId} />
 		</div>
 		<DeleteAccountsDialog open={deleteOpen} onOpenChange={setDeleteOpen} accounts={accounts.filter((account) => selected.has(account.id))} candidates={accounts} onDeleted={async () => { setDeleteOpen(false); setSelected(new Set()); await loadAccounts(); }} />
 		<Dialog open={createOpen} onOpenChange={setCreateOpen}><DialogContent className="max-h-[calc(100dvh-4rem)] w-[min(640px,calc(100vw-32px))] overflow-y-auto"><DialogHeader><DialogTitle>{t("accounts.addTitle")}</DialogTitle><DialogDescription>{t("accounts.addDescription")}</DialogDescription></DialogHeader><form onSubmit={createAccount}><fieldset disabled={saving} className="space-y-4">

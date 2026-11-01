@@ -9,17 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getAvatarColorStyle } from "@/lib/avatar-colors";
 import { getAccountPurgeDate, getAccountStatus } from "@/lib/accounts/deletion-utils";
+import { formatDriveSize } from "@/lib/drive/utils";
 import { formatAccountDate, formatAccountDateTime } from "./utils";
 import type { AccountsTableProps } from "./accounts-table-types";
 
-const COLUMNS = "grid grid-cols-[auto_minmax(0,1fr)_1.75rem] items-center gap-x-4 md:grid-cols-[auto_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_1.75rem]";
+const COLUMNS = "grid grid-cols-[auto_minmax(0,1fr)_1.75rem] items-center gap-x-4 md:grid-cols-[auto_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_1.75rem]";
 const STATUS_STYLES = {
 	active: "bg-green-600/10 text-green-800",
 	disabled: "bg-neutral-100 text-neutral-600",
 	pendingDeletion: "bg-red-100 text-red-700",
 };
 
-export function AccountsTable({ accounts, currentUserId, isPrimaryAdmin, loading, selected, onSelectedChange, onDeleteSelected, onRestore, restoringId }: AccountsTableProps) {
+export function AccountsTable({ accounts, currentUserId, isPrimaryAdmin, storageLimit, loading, selected, onSelectedChange, onDeleteSelected, onRestore, restoringId }: AccountsTableProps) {
 	const { t } = useLanguage();
 	const isSelectable = (account: AccountsTableProps["accounts"][number]) =>
 		!account.isPrimaryAdmin && account.id !== currentUserId && !account.deletedAt && (isPrimaryAdmin || account.role !== "admin");
@@ -39,6 +40,7 @@ export function AccountsTable({ accounts, currentUserId, isPrimaryAdmin, loading
 			<span>{selected.size ? t("common.selectedCount", { count: selected.size }) : t("accounts.colAccount")}</span>
 			<span className="hidden md:block">{t("accounts.colStatus")}</span>
 			<span className="hidden md:block">{t("accounts.colLastSignIn")}</span>
+			<span className="hidden md:block">{t("accounts.colStorage")}</span>
 			<span className="flex justify-end">
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger asChild><Button variant="ghost" size="sm" className="h-7 w-7 p-0" aria-label={t("accounts.moreActions")}><MoreVertical className="h-4 w-4" /></Button></DropdownMenu.Trigger>
@@ -52,6 +54,7 @@ export function AccountsTable({ accounts, currentUserId, isPrimaryAdmin, loading
 		{accounts.map((account) => {
 			const locked = !isPrimaryAdmin && account.role === "admin" && account.id !== currentUserId;
 			const status = getAccountStatus({ disabled: !!account.disabled, deletedAt: account.deletedAt });
+			const atStorageLimit = !!storageLimit && (account.storageUsed ?? 0) >= storageLimit;
 			const statusLabel = status === "pendingDeletion" && account.deletedAt
 				? t("accounts.status.pendingDeletion", { date: formatAccountDate(getAccountPurgeDate(new Date(account.deletedAt)).toISOString()) })
 				: t(`accounts.status.${status}`);
@@ -62,6 +65,7 @@ export function AccountsTable({ accounts, currentUserId, isPrimaryAdmin, loading
 				</span>
 				<span className="hidden md:block"><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[status]}`}>{statusLabel}</span></span>
 				<span className="hidden text-sm text-neutral-500 md:block">{account.lastSignInAt ? formatAccountDateTime(account.lastSignInAt) : t("accounts.neverSignedIn")}</span>
+				<span className={`hidden text-sm md:block ${atStorageLimit ? "text-red-600" : "text-neutral-500"}`}>{formatDriveSize(account.storageUsed ?? 0)}</span>
 			</>;
 			const rowClass = `${COLUMNS} px-5 py-3 border-b border-neutral-100 last:border-b-0`;
 			const checkbox = <Checkbox aria-label={t("accounts.selectOne", { name: account.name })} checked={selected.has(account.id)} disabled={!isSelectable(account)} onChange={(event) => toggle(account.id, event.target.checked)} />;

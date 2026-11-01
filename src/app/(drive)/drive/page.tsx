@@ -17,6 +17,7 @@ import { authFetch } from "@/lib/auth/client";
 import { canEditDrive, DRIVE_MAX_FILE_BYTES, formatDriveSize } from "@/lib/drive/utils";
 import type { DriveItemDto } from "@/lib/drive/types";
 import { DRIVE_FOLDERS_EVENT, DRIVE_NEW_FOLDER_EVENT, DRIVE_REFRESH_EVENT, DRIVE_STORAGE_EVENT, DRIVE_UPLOAD_EVENT } from "../drive-events";
+import type { DriveStorageDetail } from "../drive-events";
 import { DrivePreviewBody } from "../drive-preview";
 import { DriveShareDialog } from "../drive-share-dialog";
 import { driveFileUrl, driveIconFor, emailUrl, sortDriveItems } from "../drive-utils";
@@ -35,6 +36,9 @@ import { clearDriveListings, readDriveListing, saveDriveListing } from "../drive
 import type { DriveListing } from "../drive-cache";
 import { Skeleton } from "@/components/ui/skeleton";
 import { canDropDrive, driveDropHandlers, endDriveDrag, isDriveDraggable, startDriveDrag } from "../drive-drag";
+
+/** The items response also splits the usage into mail and Drive; the cached `DriveListing` keeps only the total. */
+type DriveItemsResponse = DriveListing & { storageMail: number; storageDrive: number };
 
 const menuItemClass = "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-700 outline-none data-[highlighted]:bg-neutral-100";
 const dateFormat = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
@@ -91,11 +95,11 @@ export default function DrivePage() {
 		try {
 			const response = await authFetch(`/api/drive/items?${search}`);
 			if (!response.ok) throw new Error();
-			const data = await response.json() as DriveListing;
+			const data = await response.json() as DriveItemsResponse;
 			saveDriveListing(key, data);
 			if (key !== requestRef.current) return;
 			setListing({ key, data }); setFailedKey(null);
-			window.dispatchEvent(new CustomEvent(DRIVE_STORAGE_EVENT, { detail: { used: data.storageUsed, limit: data.storageLimit } }));
+			window.dispatchEvent(new CustomEvent<DriveStorageDetail>(DRIVE_STORAGE_EVENT, { detail: { used: data.storageUsed, limit: data.storageLimit, mail: data.storageMail, drive: data.storageDrive } }));
 			window.dispatchEvent(new Event(DRIVE_FOLDERS_EVENT));
 		} catch {
 			if (key === requestRef.current) setFailedKey(key);
