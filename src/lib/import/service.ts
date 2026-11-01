@@ -103,6 +103,7 @@ async function importMessageToMailbox(
 		textBody: parsed.text,
 		htmlBody: parsed.html,
 		rawR2Key,
+		size: input.raw.byteLength,
 		status: placement.status,
 		read,
 		starred,

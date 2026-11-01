@@ -204,6 +204,7 @@ export async function processInboundMessage(
 			textBody: parsed.text,
 			htmlBody: parsed.html,
 			rawR2Key: payload.rawR2Key,
+			size: buffer.byteLength,
 			status,
 			// The From header is forgeable, so mail "from yourself" is not treated as already read.
 			read: false,
