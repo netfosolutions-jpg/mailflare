@@ -5,7 +5,8 @@ import { sendEmailSchema } from "@/lib/validators";
 import { sendEmail } from "@/lib/email/send";
 import { isPastSchedule, parseSendRequest } from "./utils";
 import { RequestBodyTooLargeError } from "@/lib/http/errors";
-import { getSendErrorStatus } from "./error-utils";
+import { getSendErrorStatus, STORAGE_LIMIT_SEND_ERROR } from "./error-utils";
+import { StorageLimitError } from "@/lib/storage/usage";
 import { getDb } from "@/db";
 import { agentDraftMetadata, messages } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
 		});
 		return NextResponse.json(result);
 	} catch (err) {
+		if (err instanceof StorageLimitError) return NextResponse.json({ error: STORAGE_LIMIT_SEND_ERROR }, { status: 413 });
 		const message = err instanceof Error ? err.message : "Send failed";
 		return NextResponse.json({ error: message }, { status: getSendErrorStatus(message) });
 	}

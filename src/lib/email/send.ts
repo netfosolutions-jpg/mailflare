@@ -18,6 +18,7 @@ import { ensureTrackingToken, getTrackingHostForSender } from "@/lib/tracking/op
 import { setFollowUp } from "@/lib/follow-ups/service";
 import { buildTrackingPixelUrl, injectTrackingPixel, resolveTrackingOrigin } from "@/lib/tracking/open-tracking-utils";
 import { getComposePreferences } from "@/lib/compose/preferences";
+import { assertStorageAvailable } from "@/lib/storage/usage";
 
 export type SendEmailInput = {
 	userId: string;
@@ -87,6 +88,9 @@ export async function sendEmail(
 	const sender = await getAuthorizedSenderAddress(env, input);
 	const attachments = input.attachments ?? [];
 	validateAttachments(attachments);
+	// The Sent copy occupies its body and attachments, so a user at the cap cannot send even a short message.
+	const bodyBytes = new TextEncoder().encode(`${input.text ?? ""}${input.html ?? ""}`).byteLength;
+	await assertStorageAvailable(env, db, input.userId, bodyBytes + attachments.reduce((total, attachment) => total + attachment.content.byteLength, 0));
 	const maxAttachmentMb = await getOutboundAttachmentMaxMb(env);
 	const maxAttachmentBytes = maxAttachmentMb * 1_000_000;
 	if (attachments.some((attachment) => attachment.content.byteLength > maxAttachmentBytes) ||
