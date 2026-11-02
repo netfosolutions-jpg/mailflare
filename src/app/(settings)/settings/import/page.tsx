@@ -264,7 +264,7 @@ export default function SettingsImportPage() {
               </div>
               {/* <p className="text-xs leading-5 text-neutral-500">
             Select Folders to import every source IMAP folder into matching
-            Mailflare folders.
+            NetfoMailBox folders.
           </p> */}
             </div>
 
