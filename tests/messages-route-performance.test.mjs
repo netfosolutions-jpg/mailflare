@@ -120,16 +120,16 @@ test("listed owned and read-only shared mailboxes reuse authorization without a 
 	}
 });
 
-test("missing, disabled, private, invalid grants and inactive sharing remain inaccessible", async (t) => {
+test("missing, disabled, private and invalid grants remain inaccessible; the license row never blocks sharing", async (t) => {
 	const f = await fixture(t);
 	for (const mailbox of ["missing", "disabled", "private"]) {
 		assert.equal((await GET(request(`mailboxId=${mailbox}`))).status, 404);
 	}
 	f.database.db.exec("UPDATE mailbox_access SET permission = 'invalid'");
 	assert.equal((await GET(request("mailboxId=shared"))).status, 404);
-	f.database.db.exec("UPDATE mailbox_access SET permission = 'read_only'; UPDATE license_settings SET state = 'inactive'");
-	assert.equal((await GET(request("mailboxId=shared"))).status, 404);
 	assert.equal(f.started.length, 0, "denied requests never load mail or enrichment");
+	f.database.db.exec("UPDATE mailbox_access SET permission = 'read_only'; UPDATE license_settings SET state = 'inactive'");
+	assert.equal((await GET(request("mailboxId=shared"))).status, 200, "this build shares inboxes whatever the license row says");
 	f.user = null;
 	f.queries.length = 0;
 	assert.equal((await GET(request())).status, 401);
