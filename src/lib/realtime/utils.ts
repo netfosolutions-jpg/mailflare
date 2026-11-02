@@ -33,7 +33,7 @@ export async function getMailboxNotificationUserIds(
 		.innerJoin(domains, eq(mailboxes.domainId, domains.id))
 		.where(eq(mailboxes.id, mailboxId))
 		.limit(1);
-	const sharedUserIds = mailboxRows[0]?.type === "shared" && await isTeamMailboxSharingEnabled(db)
+	const sharedUserIds = mailboxRows[0]?.type === "shared" && await isTeamMailboxSharingEnabled()
 		? (await db
 			.select({ userId: mailboxAccess.userId })
 			.from(mailboxAccess)

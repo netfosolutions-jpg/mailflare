@@ -5,7 +5,7 @@ import { licenseSettings } from "@/db/schema";
 import { LICENSE_PRODUCT_IDS } from "./constants";
 import { callPaymugLicenseApi } from "./paymug";
 import type { LicenseEntitlements, LicensePlan, LicenseStatus, PaymugLicenseAction } from "./types";
-import { hashLicenseKey, normalizeLicensePlan, parseFeatures } from "./utils";
+import { hashLicenseKey, normalizeLicensePlan } from "./utils";
 
 const LICENSE_SETTINGS_ID = "default";
 
@@ -24,23 +24,30 @@ async function getOrCreateLicenseSettings(env: CloudflareEnv) {
 	return settings;
 }
 
-function toLicenseStatus(settings: typeof licenseSettings.$inferSelect): LicenseStatus {
-	const active = settings.state === "active" && (settings.plan === "pro" || settings.plan === "team");
-	return {
-		plan: active ? settings.plan : "community",
-		state: settings.state,
-		features: parseFeatures(settings.features),
-		seatLimit: active && settings.plan === "pro" ? settings.seatLimit : null,
-		instanceId: settings.instanceId,
-		instanceUrl: settings.instanceUrl,
-		active,
-		activatedAt: settings.activatedAt,
-		validatedAt: settings.validatedAt,
-	};
-}
+/**
+ * NetfoMailBox is built for its own team, so every installation runs with the
+ * full Team feature set and never needs a key. The Paymug calls below are kept
+ * only so upstream's license routes still compile.
+ */
+export const SELF_HOSTED_LICENSE: LicenseStatus = {
+	plan: "team",
+	state: "active",
+	features: [],
+	seatLimit: null,
+	instanceId: "self-hosted",
+	instanceUrl: null,
+	active: true,
+	activatedAt: null,
+	validatedAt: null,
+};
 
 export async function getLicenseStatus(env: CloudflareEnv): Promise<LicenseStatus> {
-	return toLicenseStatus(await getOrCreateLicenseSettings(env));
+	try {
+		const settings = await getOrCreateLicenseSettings(env);
+		return { ...SELF_HOSTED_LICENSE, instanceId: settings.instanceId, instanceUrl: settings.instanceUrl };
+	} catch {
+		return SELF_HOSTED_LICENSE;
+	}
 }
 
 export async function getLicenseEntitlements(env: CloudflareEnv): Promise<LicenseEntitlements> {

@@ -176,9 +176,9 @@ Mailbox content authorization goes through `src/lib/mailboxes/access.ts` (`getMa
 
 `messages.status` is a free-text column driving the folder views: `received` (inbox), `sent`, `draft`, `spam`, `trash`, `archived`. Orthogonal to that are `starred`, `snoozedUntil`, and `folderId` (user-created folders in the `folders` table). A "folder" route under `src/app/(dashboard)/` is usually a status filter, not a table.
 
-### Licensing gates branding
+### Licensing is switched off in this fork
 
-Pro/Team keys are validated against Paymug (`src/lib/licenses/`); only a one-way key hash is stored. Without an active license the app falls back to the default name, icon, and favicon, and custom branding is unavailable. `getLicenseEntitlements` is the gate.
+Upstream gates branding, extra accounts, shared inboxes and account forwarding behind Pro/Team keys validated against Paymug (`src/lib/licenses/`). This build is for Netfo's own team, so `getLicenseStatus` returns `SELF_HOSTED_LICENSE` (an active Team plan with unlimited seats) and `isTeamMailboxSharingEnabled` is always true; `getLicenseEntitlements` therefore grants everything and the Licenses page is dropped from the admin navigation. When merging upstream, a merge that reintroduces the gate fails `tests/self-hosted-license.test.mjs`.
 
 ### Self-update
 
