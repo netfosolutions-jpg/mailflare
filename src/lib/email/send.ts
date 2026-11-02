@@ -89,7 +89,7 @@ export async function sendEmail(
 	const attachments = input.attachments ?? [];
 	validateAttachments(attachments);
 	// The Sent copy occupies its body and attachments, so a user at the cap cannot send even a short message.
-	const bodyBytes = new TextEncoder().encode(`${input.text ?? ""}${input.html ?? ""}`).byteLength;
+	const bodyBytes = bodyByteLength(input.text, input.html);
 	await assertStorageAvailable(env, db, input.userId, bodyBytes + attachments.reduce((total, attachment) => total + attachment.content.byteLength, 0));
 	const maxAttachmentMb = await getOutboundAttachmentMaxMb(env);
 	const maxAttachmentBytes = maxAttachmentMb * 1_000_000;
@@ -145,6 +145,7 @@ export async function sendEmail(
 		snippet,
 		textBody: input.text ?? null,
 		htmlBody: input.html ?? null,
+		size: bodyBytes,
 		status: "queued",
 		read: true,
 		threadId: input.threadId ?? null,
@@ -225,7 +226,7 @@ async function deliverEmail(env: CloudflareEnv, delivery: PreparedDelivery): Pro
 			})
 			: { attachments, html: input.html, text: input.text };
 		if (prepared.text !== input.text || prepared.html !== input.html) {
-			await db.update(messages).set({ textBody: prepared.text ?? null, htmlBody: prepared.html ?? null }).where(eq(messages.id, messageId));
+			await db.update(messages).set({ textBody: prepared.text ?? null, htmlBody: prepared.html ?? null, size: bodyByteLength(prepared.text, prepared.html) }).where(eq(messages.id, messageId));
 		}
 		const html = input.trackOpens && prepared.html ? await withTrackingPixel(env, messageId, from, prepared.html, input.publicOrigin) : prepared.html;
 		const response = await sendThroughProvider(
@@ -415,4 +416,9 @@ export async function processOutboundQueue(
 	if (!claimed.length) return;
 	delivery.attachments = await loadMessageAttachmentContents(env, payload.messageId);
 	await deliverEmail(env, delivery);
+}
+
+/** Bytes the Sent copy's body occupies, which is what the storage cap reserves and counts for it. */
+function bodyByteLength(text: string | null | undefined, html: string | null | undefined): number {
+	return new TextEncoder().encode(`${text ?? ""}${html ?? ""}`).byteLength;
 }

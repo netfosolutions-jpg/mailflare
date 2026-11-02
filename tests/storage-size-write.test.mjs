@@ -15,6 +15,7 @@ await build({
 			export { applyMigrations } from "./server/runtime/migrate.ts";
 			export { importMessagesToMailbox } from "./src/lib/import/service.ts";
 			export { processInboundMessage } from "./src/lib/email/inbound.ts";
+			export { sendEmail } from "./src/lib/email/send.ts";
 		`,
 		resolveDir: root,
 		sourcefile: "storage-size-write-test-entry.ts",
@@ -29,7 +30,7 @@ await build({
 	alias: { "next/headers": "next/headers.js", "next/server": "next/server.js", "cloudflare:workers": "./server/runtime/cloudflare-workers.ts" },
 	logLevel: "silent",
 });
-const { SqliteDatabase, applyMigrations, importMessagesToMailbox, processInboundMessage } = await import(pathToFileURL(join(directory, "entry.mjs")).href);
+const { SqliteDatabase, applyMigrations, importMessagesToMailbox, processInboundMessage, sendEmail } = await import(pathToFileURL(join(directory, "entry.mjs")).href);
 
 const rawMime = (subject) => new TextEncoder().encode([
 	"From: Ann <ann@two.test>",
@@ -116,4 +117,27 @@ test("inbound delivery records the raw byte length in messages.size", async (t) 
 	assert.equal(row?.status, "received");
 	assert.equal(row.raw_r2_key, rawR2Key);
 	assert.equal(row.size, raw.byteLength);
+});
+
+test("a scheduled send records the body size on the Sent copy", async (t) => {
+	const f = await fixture(t);
+	const queued = [];
+	f.env.OUTBOUND_QUEUE = { send: async (message, options) => { queued.push({ message, options }); } };
+	const text = "Hello";
+	const html = "<p>Hello</p>";
+	const result = await sendEmail(f.env, {
+		userId: f.userId,
+		mailboxId: f.mailboxId,
+		from: "sam@one.test",
+		to: ["ann@two.test"],
+		subject: "s",
+		text,
+		html,
+		scheduledAt: new Date(Date.now() + 3_600_000).toISOString(),
+	});
+	assert.equal(result.scheduled, true);
+	assert.equal(queued.length, 1);
+	const row = f.database.db.prepare("SELECT status, size FROM messages WHERE id = ?").get(result.messageId);
+	assert.equal(row.status, "queued");
+	assert.equal(row.size, new TextEncoder().encode(text + html).byteLength, "the Sent copy occupies its text and HTML bodies");
 });
